@@ -17,6 +17,7 @@ import { VibeBar } from "./components/VibeBar";
 import { AnalyticsCard } from "./components/AnalyticsCard";
 import { TimelineTab } from "./components/TimelineTab";
 import { VibeDashboard } from "./components/VibeDashboard";
+import { OperatorConsole } from "./features/operator-console";
 import { AuroraLogoMark } from "./brand/Logo";
 import { colors, gradients } from "./brand/colors";
 import { BRAND } from "./brand";
@@ -26,7 +27,7 @@ import { useEngineStatus, generateContent, QUICK_SCENARIOS } from "./hooks/useAu
 // Tab Types
 // ═══════════════════════════════════════════════════════════════════
 
-type TabId = "inbox" | "story" | "stats";
+type TabId = "inbox" | "story" | "stats" | "operator";
 
 interface Tab {
   id: TabId;
@@ -38,6 +39,7 @@ const TABS: Tab[] = [
   { id: "inbox", label: "Inbox", icon: "📥" },
   { id: "story", label: "Story", icon: "📖" },
   { id: "stats", label: "Stats", icon: "📊" },
+  { id: "operator", label: "Console", icon: "🎛️" },
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -298,11 +300,15 @@ function App() {
       </header>
 
       {/* Tab Content */}
-      <div style={{ minHeight: "calc(100vh - 200px)" }}>
-        {activeTab === "inbox" && <InboxTab />}
-        {activeTab === "story" && <TimelineTab />}
-        {activeTab === "stats" && <VibeDashboard />}
-      </div>
+      {activeTab === "operator" ? (
+        <OperatorConsole />
+      ) : (
+        <div style={{ minHeight: "calc(100vh - 200px)" }}>
+          {activeTab === "inbox" && <InboxTab />}
+          {activeTab === "story" && <TimelineTab />}
+          {activeTab === "stats" && <VibeDashboard />}
+        </div>
+      )}
 
       {/* Footer */}
       <footer

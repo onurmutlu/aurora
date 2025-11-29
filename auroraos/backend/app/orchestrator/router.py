@@ -565,3 +565,42 @@ def update_operator_status(
     
     return {"id": operator_id, "is_online": op.is_online}
 
+
+# ═══════════════════════════════════════════════════════════════════
+# CONVERSATION MODE CHANGE
+# ═══════════════════════════════════════════════════════════════════
+
+class ConversationModeUpdate(BaseModel):
+    mode: ConversationMode
+
+
+from pydantic import BaseModel
+
+
+@router.patch("/conversations/{conversation_id}/mode")
+def update_conversation_mode(
+    conversation_id: int,
+    payload: ConversationModeUpdate,
+    db: Session = Depends(get_db),
+):
+    """
+    🔄 Change conversation mode (AI_ONLY / HYBRID_GHOST / HUMAN_ONLY).
+    """
+    convo = db.get(Conversation, conversation_id)
+    if not convo:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    old_mode = convo.mode
+    convo.mode = payload.mode
+    convo.updated_at = datetime.utcnow()
+    
+    db.add(convo)
+    db.commit()
+    
+    return {
+        "success": True,
+        "conversation_id": conversation_id,
+        "old_mode": old_mode.value,
+        "new_mode": payload.mode.value,
+    }
+
