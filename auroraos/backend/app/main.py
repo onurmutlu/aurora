@@ -15,6 +15,7 @@ from .config import settings
 from .db import init_db
 from .routers import content, ai, analytics, dm, day
 from .orchestrator.router import router as orchestrator_router
+from .state.router import router as state_router
 
 
 def create_app() -> FastAPI:
@@ -50,6 +51,9 @@ def create_app() -> FastAPI:
     
     # 🚀 Orchestrator — FlirtMarket, Telegram, Web entegrasyonu
     app.include_router(orchestrator_router, prefix=f"{settings.API_V1_PREFIX}/orchestrator", tags=["orchestrator"])
+    
+    # 🏛️ State — Government data (Citizens, Treasury, AI Ops)
+    app.include_router(state_router, prefix=f"{settings.API_V1_PREFIX}/state", tags=["state"])
 
     @app.get("/")
     def root():

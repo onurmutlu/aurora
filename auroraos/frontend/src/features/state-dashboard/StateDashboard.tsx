@@ -7,7 +7,8 @@
  * ╚══════════════════════════════════════════════════════════════════╝
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchDashboardStats, fetchAIOperations, type DashboardStats, type AIOperation } from './api';
 
 // Icons (inline SVG components)
 const Globe = ({ size = 20, className = "" }) => (
@@ -58,17 +59,41 @@ const AlertTriangle = ({ size = 14 }) => (
   </svg>
 );
 
-// --- DEVLET VERİLERİ (MOCK) ---
-const CITIZEN_STATS = { total: 14050, verified: 8200, online: 1240, banned: 45 };
-const TREASURY_STATS = { reserve: '4,500,000 NCR', gdp: '+12%', inflation: '-2.4%', liquidity: 'High' };
-const AI_OPS_LOGS = [
-  { id: 1, type: 'CALL', target: '+90 532 *** ** 11', status: 'COMPLETED', duration: '45s', sentiment: 'POSITIVE' },
-  { id: 2, type: 'JUDGE', target: 'User_9912', status: 'BANNED', reason: 'Abuse Protocol', confidence: '99%' },
-  { id: 3, type: 'CALL', target: '+7 900 *** ** 22', status: 'DIALING...', duration: '0s', sentiment: 'NEUTRAL' },
-];
+// --- DEFAULT/FALLBACK DATA ---
+const DEFAULT_STATS: DashboardStats = {
+  citizens: { total: 0, verified: 0, pending: 0, online: 0, banned: 0, new_today: 0, basic_count: 0, silver_count: 0, gold_count: 0, platinum_count: 0, founder_count: 0 },
+  treasury: { reserve: '0 NCR', reserve_raw: 0, gdp_24h: '0%', gdp_raw: 0, inflation: '0%', inflation_raw: 0, liquidity: 'Low', transactions_24h: 0, volume_24h: 0, avg_transaction: 0 },
+  threat: { level: 'LOW', active_threats: 0, mitigated_24h: 0, last_incident: null, details: '0 Cyber-Attacks detected' },
+  ai_operations_24h: 0,
+  flagged_content: 0,
+};
 
 export const StateDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState('TREASURY');
+  const [stats, setStats] = useState<DashboardStats>(DEFAULT_STATS);
+  const [aiOps, setAiOps] = useState<AIOperation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [dashboardData, aiOpsData] = await Promise.all([
+          fetchDashboardStats(),
+          fetchAIOperations({ limit: 10 }),
+        ]);
+        setStats(dashboardData);
+        setAiOps(aiOpsData);
+      } catch (err) {
+        console.error('Failed to load state data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+    const interval = setInterval(loadData, 10000); // Refresh every 10s
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div 
@@ -189,7 +214,7 @@ export const StateDashboard: React.FC = () => {
             <Globe size={20} className="text-slate-500" />
             <span style={{ color: 'white', fontWeight: 700 }}>TERRITORY: GLOBAL</span>
             <span style={{ color: '#475569' }}>|</span>
-            <span style={{ color: '#06b6d4' }}>POPULATION: {CITIZEN_STATS.total.toLocaleString()}</span>
+            <span style={{ color: '#06b6d4' }}>POPULATION: {stats.citizens.total.toLocaleString()}</span>
           </div>
           <div 
             style={{
@@ -234,26 +259,26 @@ export const StateDashboard: React.FC = () => {
           {/* TOP METRICS ROW */}
           <MetricCard 
             label="NATIONAL RESERVE"
-            value={TREASURY_STATS.reserve}
-            progress={70}
+            value={stats.treasury.reserve}
+            progress={Math.min(100, (stats.treasury.reserve_raw / 5000000) * 100)}
           />
           <MetricCard 
             label="GDP GROWTH (24H)"
-            value={TREASURY_STATS.gdp}
-            valueColor="#4ade80"
+            value={stats.treasury.gdp_24h}
+            valueColor={stats.treasury.gdp_raw >= 0 ? "#4ade80" : "#ef4444"}
             subtitle="Target: +15%"
           />
           <MetricCard 
             label="ACTIVE CITIZENS"
-            value={CITIZEN_STATS.online.toString()}
+            value={stats.citizens.online.toString()}
             dots={3}
           />
           <MetricCard 
             label="THREAT LEVEL"
-            value="LOW"
-            valueColor="#ef4444"
-            subtitle="0 Cyber-Attacks detected"
-            danger
+            value={stats.threat.level}
+            valueColor={stats.threat.level === "LOW" ? "#4ade80" : stats.threat.level === "MEDIUM" ? "#fbbf24" : "#ef4444"}
+            subtitle={stats.threat.details}
+            danger={stats.threat.level !== "LOW"}
           />
 
           {/* CENTRAL MAP / HEATMAP */}
@@ -372,30 +397,40 @@ export const StateDashboard: React.FC = () => {
                 <span style={{ fontSize: 10, color: '#64748b' }}>LIVE</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {AI_OPS_LOGS.map(log => (
-                  <div 
-                    key={log.id} 
-                    style={{
-                      fontSize: 12,
-                      fontFamily: 'ui-monospace, monospace',
-                      borderLeft: '2px solid #334155',
-                      paddingLeft: 12,
-                      paddingTop: 4,
-                      paddingBottom: 4,
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                      <span>{log.type}</span>
-                      <span style={{ color: log.status === 'BANNED' ? '#ef4444' : '#22c55e' }}>
-                        {log.status}
-                      </span>
-                    </div>
-                    <div style={{ color: 'white', marginTop: 4 }}>{log.target}</div>
-                    <div style={{ fontSize: 10, color: '#475569', marginTop: 4 }}>
-                      {log.duration || log.reason}
-                    </div>
+                {aiOps.length === 0 ? (
+                  <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '20px 0' }}>
+                    {loading ? 'Loading...' : 'No recent operations'}
                   </div>
-                ))}
+                ) : (
+                  aiOps.slice(0, 5).map(op => (
+                    <div 
+                      key={op.id} 
+                      style={{
+                        fontSize: 12,
+                        fontFamily: 'ui-monospace, monospace',
+                        borderLeft: '2px solid #334155',
+                        paddingLeft: 12,
+                        paddingTop: 4,
+                        paddingBottom: 4,
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                        <span>{op.type}</span>
+                        <span style={{ 
+                          color: op.status === 'COMPLETED' ? '#22c55e' : 
+                                 op.status === 'FAILED' ? '#ef4444' : 
+                                 op.status === 'IN_PROGRESS' ? '#fbbf24' : '#94a3b8' 
+                        }}>
+                          {op.status}
+                        </span>
+                      </div>
+                      <div style={{ color: 'white', marginTop: 4 }}>{op.target}</div>
+                      <div style={{ fontSize: 10, color: '#475569', marginTop: 4 }}>
+                        {op.duration_seconds ? `${op.duration_seconds}s` : op.sentiment || 'Pending...'}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -429,7 +464,13 @@ export const StateDashboard: React.FC = () => {
                   fontSize: 12,
                 }}
               >
-                All systems nominal. <br/> No manual review needed.
+                {stats.flagged_content === 0 ? (
+                  <>All systems nominal. <br/> No manual review needed.</>
+                ) : (
+                  <span style={{ color: '#fbbf24' }}>
+                    {stats.flagged_content} items pending review
+                  </span>
+                )}
               </div>
               <button 
                 style={{
