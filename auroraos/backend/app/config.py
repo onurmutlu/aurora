@@ -8,8 +8,9 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/v1"
     DATABASE_URL: str = "sqlite:///./auroraos.db"
     
-    # Optional: OpenAI API key (used by Aurora Engine)
-    OPENAI_API_KEY: Optional[str] = None
+    # LLM API Keys
+    OPENAI_API_KEY: Optional[str] = None  # GPT models
+    XAI_API_KEY: Optional[str] = None     # Grok models (soft-ero content)
 
     class Config:
         env_file = ".env"

@@ -103,6 +103,17 @@ def get_openai_client():
     return OpenAI(api_key=api_key)
 
 
+def get_grok_client():
+    """Get Grok (xAI) client for soft-ero content, returns None if no API key."""
+    api_key = settings.XAI_API_KEY
+    if not api_key:
+        print("[Aurora Engine] No XAI_API_KEY found, Grok unavailable")
+        return None
+    from openai import OpenAI
+    print(f"[Aurora Engine] Grok client initialized (key: {api_key[:15]}...)")
+    return OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+
+
 def build_user_prompt(body: schemas.AIGenerateRequest) -> str:
     """Build the user prompt for Aurora Engine."""
     scenario_text = body.scenario or "günlük, doğal"
@@ -980,3 +991,185 @@ def evening_report(db: Session = Depends(get_db)):
         top_tag=top_tag,
         message=message,
     )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# GROK ENGINE — Soft-Ero Content (xAI)
+# ═══════════════════════════════════════════════════════════════════
+
+GROK_SOFT_ERO_PROMPT = """
+Sen Betül'ün özel içerik üretim asistanısın. Grok modeli olarak daha esnek içerik üretebilirsin.
+
+🎭 Karakter: Betül
+- 25 yaş, özgüvenli, feminen, gizemli
+- Soft flörtöz, asla vulgar değil
+- İma eder, açıkça söylemez
+- Sınırları bilir ama çizgiyi ustaca kullanır
+
+🔥 Vibe Modları:
+
+1. **midnight_whisper** (Gece Fısıltısı)
+   - Samimi, sıcak, yakın
+   - "Yatakta mısın?" değil, "Gece seninle daha güzel."
+   - Sessiz çekim, hafif dokunuş hissi
+
+2. **silk_tease** (İpek Oyun)
+   - Oyuncu, hafif kışkırtıcı
+   - Merak uyandırır, tatmin etmez
+   - "Görmek ister misin?" ama göstermez
+   - Güç dinamiği: O kontrol ediyor
+
+3. **velvet_fire** (Kadife Ateş)
+   - Daha yoğun ama hâlâ elegant
+   - Tutku var ama estetik
+   - Beden dili tarif edilir, eylem değil
+   - "Tenimin sıcaklığını hayal et."
+
+📝 Çıktı formatı:
+
+{{
+  "variants": [
+    {{ "vibe_mode": "midnight_whisper", "text": "<soft, samimi metin>" }},
+    {{ "vibe_mode": "silk_tease", "text": "<oyuncu, kışkırtıcı metin>" }},
+    {{ "vibe_mode": "velvet_fire", "text": "<yoğun ama elegant metin>" }}
+  ]
+}}
+
+⚠️ KURALLAR:
+- Açık cinsel içerik YOK (explicit sex acts, genitalia mentions)
+- Vulgar kelimeler YOK
+- Zorlama/consent ihlali YOK
+- 18+ ama tasteful
+- Her metin max 160 karakter
+- Türkçe yaz
+- Sadece JSON döndür
+""".strip()
+
+
+class SoftEroRequest(BaseModel):
+    """Request for soft-ero content generation."""
+    scenario: str = "genel"  # "gece", "selfie", "yatak", "banyo", "flört"
+    intensity: str = "medium"  # "soft", "medium", "spicy"
+    target: str = "dm"  # "dm", "story", "feed"
+
+
+class SoftEroResponse(BaseModel):
+    """Response with soft-ero variants."""
+    scenario: str
+    intensity: str
+    provider: str
+    variants: list[dict]
+
+
+def build_soft_ero_prompt(body: SoftEroRequest) -> str:
+    """Build user prompt for soft-ero content."""
+    intensity_guide = {
+        "soft": "Çok hafif, sadece ima. Romantik ve sıcak.",
+        "medium": "Flörtöz, kışkırtıcı ama sınırları koruyan.",
+        "spicy": "Daha cesur, ateşli ama asla vulgar değil.",
+    }
+    
+    return f"""
+Senaryo: {body.scenario}
+Yoğunluk: {body.intensity} — {intensity_guide.get(body.intensity, intensity_guide["medium"])}
+Hedef: {body.target}
+
+Bu senaryoya uygun 3 farklı vibe'da soft-ero metin üret.
+Betül'ün karakterine sadık kal: özgüvenli, gizemli, kontrol onda.
+""".strip()
+
+
+def generate_mock_soft_ero(body: SoftEroRequest) -> list[dict]:
+    """Fallback mock soft-ero content."""
+    return [
+        {"vibe_mode": "midnight_whisper", "text": "Gece seninle daha güzel geçerdi..."},
+        {"vibe_mode": "silk_tease", "text": "Merak ettin mi ne giydiğimi? 😏"},
+        {"vibe_mode": "velvet_fire", "text": "Tenimde hâlâ o parfümün kokusu var."},
+    ]
+
+
+def call_grok_soft_ero_engine(body: SoftEroRequest) -> list[dict]:
+    """
+    Call Grok (xAI) for soft-ero content generation.
+    Grok has more flexible content policies than OpenAI.
+    """
+    client = get_grok_client()
+    
+    if not client:
+        print("[Grok Engine] No API key, falling back to mock")
+        return generate_mock_soft_ero(body)
+    
+    user_prompt = build_soft_ero_prompt(body)
+    
+    try:
+        completion = client.chat.completions.create(
+            model="grok-3-latest",  # or grok-3-mini for faster/cheaper
+            messages=[
+                {"role": "system", "content": GROK_SOFT_ERO_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.85,
+            max_tokens=600,
+        )
+        
+        raw = completion.choices[0].message.content
+        
+        # Try to parse JSON
+        try:
+            # Handle potential markdown code blocks
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0]
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0]
+            
+            data = json.loads(raw.strip())
+            return data.get("variants", [])
+        except json.JSONDecodeError:
+            print(f"[Grok Engine] JSON parse error, raw: {raw[:200]}")
+            return generate_mock_soft_ero(body)
+        
+    except Exception as e:
+        print(f"[Grok Engine] Error: {e}")
+        return generate_mock_soft_ero(body)
+
+
+@router.post("/soft_ero", response_model=SoftEroResponse)
+def generate_soft_ero(body: SoftEroRequest):
+    """
+    🔥 Grok Soft-Ero Engine — Premium içerik üretimi.
+    
+    xAI Grok kullanarak soft-erotik içerik üretir.
+    OpenAI'dan farklı olarak daha esnek content policy.
+    
+    Senaryolar: gece, selfie, yatak, banyo, flört, genel
+    Yoğunluk: soft, medium, spicy
+    
+    ⚠️ 18+ ama tasteful. Vulgar/explicit içerik üretmez.
+    """
+    variants = call_grok_soft_ero_engine(body)
+    
+    return SoftEroResponse(
+        scenario=body.scenario,
+        intensity=body.intensity,
+        provider="grok" if get_grok_client() else "mock",
+        variants=variants,
+    )
+
+
+@router.get("/grok/status")
+def grok_status():
+    """Check Grok (xAI) engine availability."""
+    has_key = bool(settings.XAI_API_KEY)
+    return {
+        "engine": "Grok Soft-Ero Engine",
+        "provider": "xAI",
+        "available": has_key,
+        "model": "grok-3-latest" if has_key else "mock",
+        "capabilities": [
+            "soft_ero_content",
+            "midnight_whisper",
+            "silk_tease", 
+            "velvet_fire",
+        ],
+        "content_policy": "18+ tasteful, non-explicit",
+    }
