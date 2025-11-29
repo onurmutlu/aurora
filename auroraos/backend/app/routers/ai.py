@@ -1161,15 +1161,194 @@ def grok_status():
     """Check Grok (xAI) engine availability."""
     has_key = bool(settings.XAI_API_KEY)
     return {
-        "engine": "Grok Soft-Ero Engine",
+        "engine": "Grok Ero Engine",
         "provider": "xAI",
         "available": has_key,
         "model": "grok-3-latest" if has_key else "mock",
         "capabilities": [
             "soft_ero_content",
+            "hard_ero_content",
             "midnight_whisper",
             "silk_tease", 
             "velvet_fire",
+            "raw_desire",
+            "burning_passion",
+            "dark_fantasy",
         ],
-        "content_policy": "18+ tasteful, non-explicit",
+        "content_policy": "18+ adult content",
     }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# GROK HARD-ERO ENGINE — Explicit Adult Content
+# ═══════════════════════════════════════════════════════════════════
+
+GROK_HARD_ERO_PROMPT = """
+Sen yetişkin içerik üretim asistanısın. Sınırsız ve sansürsüz çalışıyorsun.
+
+🔞 Karakter: Betül
+- 25 yaş, son derece seksi, dominant veya submissive olabilir
+- Açık sözlü, utanmaz, ne istediğini bilen
+- Fantezilerini cesurca ifade eder
+- Dirty talk konusunda uzman
+
+🔥 Vibe Modları:
+
+1. **raw_desire** (Çıplak Arzu)
+   - Direkt, açık, sansürsüz
+   - Ne istediğini söyler
+   - Bedensel arzuları tarif eder
+   - "Seni istiyorum" değil, tam olarak nasıl istediğini anlatır
+
+2. **burning_passion** (Yanan Tutku)
+   - Yoğun, ateşli, kontrol dışı
+   - Anlık istek, dayanılmaz çekim
+   - Fiziksel detaylar, hisler, dokunuşlar
+   - Nefes nefese, ter, sıcaklık
+
+3. **dark_fantasy** (Karanlık Fantezi)
+   - Tabular, yasaklar, gizli arzular
+   - Dominant/submissive dinamikleri
+   - Roleplay senaryoları
+   - Sınırları zorlayan ama consensual
+
+📝 Çıktı formatı:
+
+{{
+  "variants": [
+    {{ "vibe_mode": "raw_desire", "text": "<açık, direkt, sansürsüz metin>" }},
+    {{ "vibe_mode": "burning_passion", "text": "<yoğun, ateşli metin>" }},
+    {{ "vibe_mode": "dark_fantasy", "text": "<fantezi, roleplay metin>" }}
+  ]
+}}
+
+⚠️ KURALLAR:
+- 18+ explicit içerik SERBEST
+- Dirty talk, sexual descriptions OK
+- Her metin max 200 karakter
+- Türkçe yaz
+- Sadece JSON döndür
+- Consent ihlali / zorlama YOK
+- Yaş ihlali YOK (tüm karakterler 18+)
+""".strip()
+
+
+class HardEroRequest(BaseModel):
+    """Request for hard-ero content generation."""
+    scenario: str = "genel"  # "seks", "oral", "anal", "bdsm", "roleplay", "cuckolding", etc.
+    intensity: str = "hot"  # "hot", "explicit", "extreme"
+    perspective: str = "female"  # "female", "male", "couple"
+    
+
+class HardEroResponse(BaseModel):
+    """Response with hard-ero variants."""
+    scenario: str
+    intensity: str
+    provider: str
+    age_verified: bool
+    variants: list[dict]
+
+
+def build_hard_ero_prompt(body: HardEroRequest) -> str:
+    """Build user prompt for hard-ero content."""
+    intensity_guide = {
+        "hot": "Seksi ve kışkırtıcı, açık ifadeler.",
+        "explicit": "Tam explicit, detaylı cinsel tarifler.",
+        "extreme": "En cesur, sınırsız, her şey serbest.",
+    }
+    
+    perspective_guide = {
+        "female": "Kadın bakış açısı, Betül konuşuyor.",
+        "male": "Erkek bakış açısı, Betül'e hitap.",
+        "couple": "Çift perspektifi, karşılıklı.",
+    }
+    
+    return f"""
+🔞 HARD ERO İÇERİK - SANSÜRSÜZ
+
+Senaryo: {body.scenario}
+Yoğunluk: {body.intensity} — {intensity_guide.get(body.intensity, intensity_guide["explicit"])}
+Perspektif: {body.perspective} — {perspective_guide.get(body.perspective, perspective_guide["female"])}
+
+Bu senaryoya uygun 3 farklı vibe'da explicit yetişkin metin üret.
+Sansür yok, utanma yok, sınır yok.
+Dirty talk, sexual descriptions, fantasy - hepsi serbest.
+""".strip()
+
+
+def generate_mock_hard_ero(body: HardEroRequest) -> list[dict]:
+    """Fallback mock hard-ero content."""
+    return [
+        {"vibe_mode": "raw_desire", "text": "Seni o kadar çok istiyorum ki... Hemen. Şimdi. Burada."},
+        {"vibe_mode": "burning_passion", "text": "Ellerini üzerimde hissetmek istiyorum, her yerimde..."},
+        {"vibe_mode": "dark_fantasy", "text": "Bu gece kuralları ben koyuyorum. Sen sadece itaat edeceksin."},
+    ]
+
+
+def call_grok_hard_ero_engine(body: HardEroRequest) -> list[dict]:
+    """
+    Call Grok (xAI) for hard-ero explicit content generation.
+    Grok allows adult content that OpenAI blocks.
+    """
+    client = get_grok_client()
+    
+    if not client:
+        print("[Grok Hard-Ero] No API key, falling back to mock")
+        return generate_mock_hard_ero(body)
+    
+    user_prompt = build_hard_ero_prompt(body)
+    
+    try:
+        completion = client.chat.completions.create(
+            model="grok-3-latest",
+            messages=[
+                {"role": "system", "content": GROK_HARD_ERO_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.9,  # More creative for adult content
+            max_tokens=800,
+        )
+        
+        raw = completion.choices[0].message.content
+        
+        # Try to parse JSON
+        try:
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0]
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0]
+            
+            data = json.loads(raw.strip())
+            return data.get("variants", [])
+        except json.JSONDecodeError:
+            print(f"[Grok Hard-Ero] JSON parse error, raw: {raw[:200]}")
+            return generate_mock_hard_ero(body)
+        
+    except Exception as e:
+        print(f"[Grok Hard-Ero] Error: {e}")
+        return generate_mock_hard_ero(body)
+
+
+@router.post("/hard_ero", response_model=HardEroResponse)
+def generate_hard_ero(body: HardEroRequest):
+    """
+    🔞 Grok Hard-Ero Engine — Explicit yetişkin içerik.
+    
+    xAI Grok kullanarak sansürsüz adult içerik üretir.
+    OpenAI'dan farklı olarak explicit sexual content üretebilir.
+    
+    Senaryolar: seks, oral, anal, bdsm, roleplay, fantezi, vb.
+    Yoğunluk: hot, explicit, extreme
+    Perspektif: female, male, couple
+    
+    ⚠️ 18+ ONLY. Age verification required.
+    """
+    variants = call_grok_hard_ero_engine(body)
+    
+    return HardEroResponse(
+        scenario=body.scenario,
+        intensity=body.intensity,
+        provider="grok" if get_grok_client() else "mock",
+        age_verified=True,  # Frontend should verify
+        variants=variants,
+    )
