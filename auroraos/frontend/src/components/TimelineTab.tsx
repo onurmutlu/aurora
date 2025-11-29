@@ -156,115 +156,188 @@ function EventCard({ event }: { event: DayEvent }) {
 // ═══════════════════════════════════════════════════════════════════
 
 function SummaryCard() {
-  const { data, loading, error } = useDaySummary();
+  const { data, loading, error, refetch } = useDaySummary();
 
   if (loading) {
     return (
       <div
         style={{
           padding: 20,
-          background: gradients.cardSurface,
+          background: `linear-gradient(135deg, rgba(175, 163, 255, 0.05) 0%, rgba(173, 95, 255, 0.03) 100%)`,
           borderRadius: 16,
           border: `1px solid ${colors.borderSubtle}`,
           marginBottom: 20,
         }}
       >
-        <div style={{ color: colors.textMuted, fontSize: 13 }}>
-          🧠 Aurora bugünü okuyor...
+        <div 
+          style={{ 
+            color: colors.auroraLavender, 
+            fontSize: 13, 
+            display: "flex", 
+            alignItems: "center", 
+            gap: 10 
+          }}
+        >
+          <span className="animate-pulse" style={{ fontSize: 20 }}>🧠</span>
+          <span>Aurora seni okuyor...</span>
         </div>
       </div>
     );
   }
 
   if (error || !data) {
-    return null;
+    return (
+      <div
+        style={{
+          padding: 16,
+          background: "rgba(255, 100, 100, 0.05)",
+          borderRadius: 12,
+          border: `1px solid rgba(255, 100, 100, 0.2)`,
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span style={{ color: colors.textMuted, fontSize: 12 }}>
+          Aurora bağlanamadı
+        </span>
+        <button
+          onClick={() => refetch()}
+          style={{
+            padding: "4px 10px",
+            background: "rgba(175, 163, 255, 0.2)",
+            border: "none",
+            borderRadius: 8,
+            color: colors.auroraLavender,
+            fontSize: 11,
+            cursor: "pointer",
+          }}
+        >
+          Tekrar dene
+        </button>
+      </div>
+    );
   }
 
   return (
     <div
       style={{
-        padding: 20,
-        background: `linear-gradient(135deg, rgba(175, 163, 255, 0.08) 0%, rgba(173, 95, 255, 0.05) 100%)`,
+        padding: 16,
+        background: `linear-gradient(135deg, rgba(175, 163, 255, 0.1) 0%, rgba(173, 95, 255, 0.06) 100%)`,
         borderRadius: 16,
         border: `1px solid ${colors.borderActive}`,
         marginBottom: 20,
         boxShadow: shadows.glow,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Decorative gradient orb */}
+      <div
+        style={{
+          position: "absolute",
+          top: -30,
+          right: -30,
+          width: 100,
+          height: 100,
+          background: `radial-gradient(circle, ${colors.auroraLavender}20, transparent)`,
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }}
+      />
+
       {/* Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 8,
-          marginBottom: 14,
+          justifyContent: "space-between",
+          marginBottom: 12,
         }}
       >
-        <span style={{ fontSize: 18 }}>✨</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 16 }}>✨</span>
+          <span
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 11,
+              fontWeight: 600,
+              color: colors.auroraLavender,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+            }}
+          >
+            Aurora's Read
+          </span>
+        </div>
         <span
           style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: 13,
-            fontWeight: 600,
-            color: colors.auroraLavender,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
+            fontSize: 9,
+            color: colors.textMuted,
+            fontFamily: "'JetBrains Mono', monospace",
           }}
         >
-          Aurora's Read
+          AI-powered
         </span>
       </div>
 
-      {/* Vibe Summary */}
+      {/* Vibe Summary - Hero text */}
       <div
         style={{
-          fontSize: 16,
+          fontSize: 15,
           fontWeight: 500,
           color: colors.textPrimary,
-          marginBottom: 12,
-          lineHeight: 1.5,
+          marginBottom: 14,
+          lineHeight: 1.55,
+          fontFamily: "'Inter', sans-serif",
         }}
       >
         {data.vibe_summary}
       </div>
 
-      {/* What Happened */}
+      {/* What Happened - Story block */}
       <div
         style={{
-          fontSize: 13,
+          fontSize: 12,
           color: colors.textSecondary,
-          lineHeight: 1.6,
-          marginBottom: 16,
-          paddingLeft: 12,
-          borderLeft: `2px solid ${colors.borderLight}`,
+          lineHeight: 1.65,
+          marginBottom: 14,
+          padding: "10px 12px",
+          background: "rgba(0, 0, 0, 0.2)",
+          borderRadius: 10,
+          borderLeft: `3px solid ${colors.auroraLavender}40`,
         }}
       >
         {data.what_happened}
       </div>
 
-      {/* Evening & Energy */}
-      <div style={{ display: "flex", gap: 12 }}>
+      {/* Evening & Energy - Compact cards */}
+      <div style={{ display: "flex", gap: 8 }}>
         <div
           style={{
             flex: 1,
-            padding: "10px 12px",
-            background: "rgba(0, 245, 160, 0.08)",
+            padding: "10px",
+            background: "rgba(0, 245, 160, 0.06)",
             borderRadius: 10,
-            border: `1px solid rgba(0, 245, 160, 0.2)`,
+            border: `1px solid rgba(0, 245, 160, 0.15)`,
           }}
         >
           <div
             style={{
-              fontSize: 10,
+              fontSize: 9,
               color: colors.neuralMint,
               textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              marginBottom: 4,
+              letterSpacing: "0.08em",
+              marginBottom: 5,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
             }}
           >
-            🌙 Akşam için
+            <span>🌙</span> Akşam İçin
           </div>
-          <div style={{ fontSize: 12, color: colors.textPrimary }}>
+          <div style={{ fontSize: 11, color: colors.textPrimary, lineHeight: 1.5 }}>
             {data.evening_suggestion}
           </div>
         </div>
@@ -272,27 +345,54 @@ function SummaryCard() {
         <div
           style={{
             flex: 1,
-            padding: "10px 12px",
-            background: "rgba(175, 163, 255, 0.08)",
+            padding: "10px",
+            background: "rgba(175, 163, 255, 0.06)",
             borderRadius: 10,
-            border: `1px solid rgba(175, 163, 255, 0.2)`,
+            border: `1px solid rgba(175, 163, 255, 0.15)`,
           }}
         >
           <div
             style={{
-              fontSize: 10,
+              fontSize: 9,
               color: colors.auroraLavender,
               textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              marginBottom: 4,
+              letterSpacing: "0.08em",
+              marginBottom: 5,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
             }}
           >
-            ⚡ Enerji
+            <span>⚡</span> Enerji Tavsiyesi
           </div>
-          <div style={{ fontSize: 12, color: colors.textPrimary }}>
+          <div style={{ fontSize: 11, color: colors.textPrimary, lineHeight: 1.5 }}>
             {data.energy_advice}
           </div>
         </div>
+      </div>
+
+      {/* Refresh hint */}
+      <div
+        style={{
+          marginTop: 12,
+          textAlign: "center",
+        }}
+      >
+        <button
+          onClick={() => refetch()}
+          style={{
+            padding: "4px 12px",
+            background: "transparent",
+            border: `1px solid ${colors.borderSubtle}`,
+            borderRadius: 20,
+            color: colors.textMuted,
+            fontSize: 10,
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+        >
+          🔄 Yeniden oku
+        </button>
       </div>
     </div>
   );

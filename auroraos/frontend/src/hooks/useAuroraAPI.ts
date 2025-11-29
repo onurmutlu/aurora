@@ -132,26 +132,27 @@ export function useDaySummary(date?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await fetchJSON<DaySummary>("/ai/day_summary", {
-          method: "POST",
-          body: JSON.stringify({ date: date || null }),
-        });
-        setData(result);
-      } catch (e) {
-        setError((e as Error).message);
-      } finally {
-        setLoading(false);
-      }
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetchJSON<DaySummary>("/ai/day_summary", {
+        method: "POST",
+        body: JSON.stringify({ date: date || null }),
+      });
+      setData(result);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
     }
-    load();
   }, [date]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { data, loading, error, refetch };
 }
 
 export function useDayStats() {
