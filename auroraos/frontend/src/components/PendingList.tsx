@@ -230,10 +230,10 @@ export function PendingList() {
   return (
     <div
       style={{
-        padding: 16,
+        padding: 12,
         display: "flex",
         flexDirection: "column",
-        gap: 16,
+        gap: 12,
       }}
     >
       <div
@@ -271,9 +271,9 @@ export function PendingList() {
         <div
           key={item.id}
           style={{
-            borderRadius: 16,
+            borderRadius: 12,
             border: `1px solid ${deciding ? colors.auroraLavender : colors.borderSubtle}`,
-            padding: 16,
+            padding: 12,
             background: deciding 
               ? "rgba(175, 163, 255, 0.1)" 
               : "rgba(0,0,0,0.4)",
@@ -285,9 +285,9 @@ export function PendingList() {
         >
           <div
             style={{
-              fontSize: 11,
+              fontSize: 10,
               opacity: 0.5,
-              marginBottom: 12,
+              marginBottom: 8,
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -297,22 +297,22 @@ export function PendingList() {
               style={{
                 background: "rgba(175, 163, 255, 0.2)",
                 color: "#c4b5fd",
-                padding: "2px 8px",
+                padding: "1px 6px",
                 borderRadius: 999,
-                fontSize: 10,
+                fontSize: 9,
                 textTransform: "uppercase",
               }}
             >
               {item.type} → {item.target_channel}
             </span>
-            <span>{new Date(item.created_at).toLocaleTimeString("tr-TR")}</span>
+            <span style={{ fontSize: 9 }}>{new Date(item.created_at).toLocaleTimeString("tr-TR")}</span>
           </div>
 
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 12,
+              gap: 8,
             }}
           >
             {item.variants.map((v) => {
@@ -323,8 +323,8 @@ export function PendingList() {
               <div
                 key={v.id}
                 style={{
-                  borderRadius: 12,
-                  padding: 14,
+                  borderRadius: 10,
+                  padding: 10,
                   background: isSelected 
                     ? "rgba(175, 163, 255, 0.15)" 
                     : "rgba(255,255,255,0.03)",
@@ -339,9 +339,9 @@ export function PendingList() {
                   <div
                     style={{
                       position: "absolute",
-                      top: 8,
-                      right: 8,
-                      fontSize: 20,
+                      top: 6,
+                      right: 6,
+                      fontSize: 16,
                       zIndex: 5,
                     }}
                   >
@@ -349,7 +349,7 @@ export function PendingList() {
                   </div>
                 )}
                 
-                {/* Selection overlay (only for final decisions) */}
+                {/* Selection overlay */}
                 {isSelected && (
                   <div
                     style={{
@@ -362,13 +362,13 @@ export function PendingList() {
                       alignItems: "center",
                       justifyContent: "center",
                       background: "rgba(0,0,0,0.7)",
-                      borderRadius: 12,
+                      borderRadius: 10,
                       zIndex: 10,
                     }}
                   >
                     <div
                       style={{
-                        fontSize: 18,
+                        fontSize: 14,
                         fontWeight: 600,
                         color: colors.auroraLavender,
                         textAlign: "center",
@@ -380,50 +380,52 @@ export function PendingList() {
                 )}
                 <div
                   style={{
-                    fontSize: 10,
-                    opacity: 0.5,
-                    marginBottom: 8,
+                    fontSize: 9,
+                    opacity: 0.6,
+                    marginBottom: 6,
                   }}
                 >
                   <span
                     style={{
                       background: "rgba(255,255,255,0.1)",
-                      padding: "2px 6px",
-                      borderRadius: 4,
+                      padding: "1px 5px",
+                      borderRadius: 3,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
                     }}
                   >
-                    {v.vibe_mode}
+                    {v.vibe_mode.replace(/_/g, " ")}
                   </span>
                 </div>
 
                 <div
                   style={{
-                    fontSize: 15,
-                    lineHeight: 1.5,
-                    marginBottom: 14,
+                    fontSize: 13,
+                    lineHeight: 1.45,
+                    marginBottom: 10,
                     color: "rgba(255,255,255,0.95)",
                   }}
                 >
                   {v.text}
                 </div>
 
-                {/* 4-Button Feedback Grid */}
+                {/* Compact 4-Button Grid */}
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: 8,
+                    gap: 6,
                   }}
                 >
-                  {/* ⭐ Bu çok ben - Strong Positive (just marks, doesn't remove) */}
+                  {/* ⭐ Bu çok ben */}
                   <button
                     onClick={() => handleStrongFeedback(item, v, "strong_positive")}
                     disabled={variantFeedback.has(v.id)}
                     style={{
-                      padding: "10px 0",
-                      borderRadius: 999,
+                      padding: "6px 8px",
+                      borderRadius: 8,
                       border: "none",
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: 500,
                       cursor: variantFeedback.has(v.id) ? "default" : "pointer",
                       background: variantFeedback.get(v.id) === "⭐"
@@ -435,24 +437,24 @@ export function PendingList() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: 6,
+                      gap: 4,
                       opacity: variantFeedback.has(v.id) && variantFeedback.get(v.id) !== "⭐" ? 0.4 : 1,
                       transition: "all 0.2s ease",
                     }}
                   >
-                    <span>⭐</span>
-                    <span>{variantFeedback.get(v.id) === "⭐" ? "Seçildi!" : "Bu çok ben"}</span>
+                    <span style={{ fontSize: 12 }}>⭐</span>
+                    <span>{variantFeedback.get(v.id) === "⭐" ? "OK" : "Çok ben"}</span>
                   </button>
 
-                  {/* 🚫 Bu asla ben değil - Strong Negative (just marks, doesn't remove) */}
+                  {/* 🚫 Asla */}
                   <button
                     onClick={() => handleStrongFeedback(item, v, "strong_negative")}
                     disabled={variantFeedback.has(v.id)}
                     style={{
-                      padding: "10px 0",
-                      borderRadius: 999,
+                      padding: "6px 8px",
+                      borderRadius: 8,
                       border: `1px solid rgba(239, 68, 68, 0.3)`,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: 500,
                       cursor: variantFeedback.has(v.id) ? "default" : "pointer",
                       background: variantFeedback.get(v.id) === "🚫"
@@ -462,24 +464,24 @@ export function PendingList() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: 6,
+                      gap: 4,
                       opacity: variantFeedback.has(v.id) && variantFeedback.get(v.id) !== "🚫" ? 0.4 : 1,
                       transition: "all 0.2s ease",
                     }}
                   >
-                    <span>🚫</span>
-                    <span>{variantFeedback.get(v.id) === "🚫" ? "İşaretlendi" : "Bu asla ben değil"}</span>
+                    <span style={{ fontSize: 12 }}>🚫</span>
+                    <span>{variantFeedback.get(v.id) === "🚫" ? "OK" : "Asla"}</span>
                   </button>
 
-                  {/* ✓ Onayla - Final decision, removes the item */}
+                  {/* ✓ Onayla */}
                   <button
                     onClick={() => handleFinalDecision(item, v, "approve")}
                     disabled={!!deciding}
                     style={{
-                      padding: "10px 0",
-                      borderRadius: 999,
+                      padding: "6px 8px",
+                      borderRadius: 8,
                       border: "none",
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: 500,
                       cursor: deciding ? "wait" : "pointer",
                       background: `linear-gradient(135deg, #10b981, #059669)`,
@@ -487,7 +489,7 @@ export function PendingList() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: 6,
+                      gap: 4,
                       opacity: deciding ? 0.5 : 1,
                     }}
                   >
@@ -495,15 +497,15 @@ export function PendingList() {
                     <span>Onayla</span>
                   </button>
 
-                  {/* ✕ İptal - Final decision, removes the item */}
+                  {/* ✕ İptal */}
                   <button
                     onClick={() => handleFinalDecision(item, v, "reject")}
                     disabled={!!deciding}
                     style={{
-                      padding: "10px 0",
-                      borderRadius: 999,
+                      padding: "6px 8px",
+                      borderRadius: 8,
                       border: `1px solid ${colors.borderLight}`,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: 500,
                       cursor: deciding ? "wait" : "pointer",
                       background: "transparent",
@@ -511,7 +513,7 @@ export function PendingList() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: 6,
+                      gap: 4,
                       opacity: deciding ? 0.5 : 1,
                     }}
                   >
