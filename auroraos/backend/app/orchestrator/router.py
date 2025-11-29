@@ -570,11 +570,11 @@ def update_operator_status(
 # CONVERSATION MODE CHANGE
 # ═══════════════════════════════════════════════════════════════════
 
-class ConversationModeUpdate(BaseModel):
+from pydantic import BaseModel as PydanticBaseModel
+
+
+class ConversationModeUpdate(PydanticBaseModel):
     mode: ConversationMode
-
-
-from pydantic import BaseModel
 
 
 @router.patch("/conversations/{conversation_id}/mode")
@@ -603,4 +603,111 @@ def update_conversation_mode(
         "old_mode": old_mode.value,
         "new_mode": payload.mode.value,
     }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# FLIRTMARKET INTEGRATION — Routing Decision
+# ═══════════════════════════════════════════════════════════════════
+
+from .schemas import RouteRequest, RouteDecision, TelegramInboundMessage, TelegramInboundResponse
+from .services.routing_decision import orchestrator_decision
+from .services.telegram_bridge import telegram_bridge
+
+
+@router.post("/route", response_model=RouteDecision)
+def route_conversation(payload: RouteRequest):
+    """
+    🧠 FlirtMarket → AuroraOS routing decision.
+    
+    FlirtMarket calls this to determine how to route a conversation:
+    - AI_ONLY: Full autonomous AI handling
+    - HUMAN_ONLY: Operator must handle
+    - HYBRID: AI drafts, operator approves
+    - AUTO: System decides dynamically
+    
+    Body:
+    ```json
+    {
+      "conversation": {
+        "id": "conv_123",
+        "performer": {"id": "perf_1", "name": "Betelle"},
+        "customer": {"id": "cust_456", "tier": "gold", "coins_spent": 500}
+      },
+      "customer_risk_score": 0.8
+    }
+    ```
+    """
+    decision = orchestrator_decision.decide_route(
+        conversation=payload.conversation,
+        customer_risk_score=payload.customer_risk_score,
+    )
+    return decision
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TELEGRAM INTEGRATION — Real DM Bridge
+# ═══════════════════════════════════════════════════════════════════
+
+@router.post("/telegram/inbound", response_model=TelegramInboundResponse)
+def telegram_inbound(
+    payload: TelegramInboundMessage,
+    db: Session = Depends(get_db),
+):
+    """
+    📱 Telegram Worker → AuroraOS inbound message.
+    
+    The Telegram worker (Telethon) sends real DMs here.
+    
+    Flow:
+    1. Map Telegram user to internal user
+    2. Find/create conversation
+    3. Decide routing (AI/Human/Hybrid)
+    4. If AI: generate reply, queue outbound
+    5. If Human/Hybrid: queue for operator
+    
+    Body:
+    ```json
+    {
+      "telegram_user_id": 123456789,
+      "username": "cool_user",
+      "first_name": "Ahmet",
+      "message": "Merhaba, nasılsın?"
+    }
+    ```
+    """
+    response = telegram_bridge.process_inbound(db=db, message=payload)
+    return response
+
+
+@router.get("/telegram/outbound")
+def telegram_outbound(
+    limit: int = Query(default=10, le=50),
+):
+    """
+    📤 Poll for outbound Telegram messages.
+    
+    Telegram worker calls this to get AI replies to send.
+    """
+    from .services.outbound import get_outbound_for_polling
+    
+    messages = get_outbound_for_polling(ConversationOrigin.TELEGRAM, limit)
+    return {"messages": messages, "count": len(messages)}
+
+
+@router.post("/telegram/delivered")
+def telegram_delivered(
+    external_user_id: str,
+    message_id: int,
+):
+    """
+    ✅ Confirm Telegram message was delivered.
+    """
+    from .services.outbound import confirm_outbound_delivered
+    
+    success = confirm_outbound_delivered(
+        ConversationOrigin.TELEGRAM,
+        external_user_id,
+        message_id,
+    )
+    return {"confirmed": success}
 

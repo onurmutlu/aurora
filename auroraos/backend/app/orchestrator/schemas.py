@@ -194,3 +194,101 @@ class OperatorStatusUpdate(BaseModel):
     """Update operator online status."""
     is_online: bool
 
+
+# ═══════════════════════════════════════════════════════════════════
+# ROUTING DECISION — FlirtMarket integration
+# ═══════════════════════════════════════════════════════════════════
+
+from enum import Enum
+
+
+class PerformerType(str, Enum):
+    """Type of performer handling the conversation."""
+    AI = "AI"
+    HUMAN = "HUMAN"
+    HYBRID = "HYBRID"
+
+
+class RoutingMode(str, Enum):
+    """How messages should be routed."""
+    AUTO = "AUTO"           # System decides
+    HUMAN_ONLY = "HUMAN_ONLY"
+    AI_ONLY = "AI_ONLY"
+    HYBRID = "HYBRID"       # AI drafts, human approves
+
+
+class PerformerProfile(BaseModel):
+    """Performer profile for routing decisions."""
+    id: str
+    display_name: str
+    type: PerformerType
+    is_test: bool = False
+    agency_id: Optional[str] = None
+    ai_profile_id: Optional[str] = None
+    telegram_handle: Optional[str] = None
+
+
+class RouteRequest(BaseModel):
+    """Request from FlirtMarket for routing decision."""
+    conversation: dict
+    customer_risk_score: float = 0.0
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "conversation": {
+                    "id": "conv_123",
+                    "performer": {"id": "perf_1", "name": "Betelle"},
+                    "customer": {"id": "cust_456", "tier": "gold"}
+                },
+                "customer_risk_score": 0.8
+            }
+        }
+
+
+class RouteDecision(BaseModel):
+    """Routing decision returned to FlirtMarket."""
+    conversation_id: str
+    target_performer_id: str
+    routing_mode: RoutingMode
+    reason: str
+    priority: str = "NORMAL"
+    suggested_agent_id: Optional[str] = None
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TELEGRAM INBOUND — Real DM integration
+# ═══════════════════════════════════════════════════════════════════
+
+class TelegramInboundMessage(BaseModel):
+    """Incoming message from Telegram worker."""
+    telegram_user_id: int
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    message: str
+    message_id: Optional[int] = None
+    chat_id: Optional[int] = None
+    is_reply: bool = False
+    reply_to_message_id: Optional[int] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "telegram_user_id": 123456789,
+                "username": "cool_user",
+                "first_name": "Ahmet",
+                "message": "Merhaba, nasılsın?",
+                "message_id": 999
+            }
+        }
+
+
+class TelegramInboundResponse(BaseModel):
+    """Response after processing Telegram inbound message."""
+    success: bool
+    conversation_id: Optional[int] = None
+    routing_mode: RoutingMode
+    ai_reply: Optional[str] = None
+    queued_for_operator: bool = False
+    matched_flirtmarket_conversation: Optional[str] = None
+
