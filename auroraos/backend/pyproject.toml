@@ -1,0 +1,18 @@
+[project]
+name = "auroraos-backend"
+version = "0.1.0"
+description = "AuroraOS / Betul-AI control backend — Dedicated to Betül"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.109.0",
+  "uvicorn[standard]>=0.27.0",
+  "sqlmodel>=0.0.14",
+  "pydantic-settings>=2.1.0",
+  "python-dotenv>=1.0.0",
+  "openai>=1.6.0"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+

@@ -1,0 +1,38 @@
+{
+  "name": "AuroraOS — Betül Console",
+  "short_name": "AuroraOS",
+  "description": "Betül'ün kişisel yapay zekâ işletim sistemi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#AFA3FF",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "lifestyle"],
+  "lang": "tr",
+  "icons": [
+    {
+      "src": "/icons/aurora.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Story Mode",
+      "short_name": "Story",
+      "description": "Günlük timeline ve event log",
+      "url": "/?tab=story",
+      "icons": [{"src": "/icons/aurora-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Vibe Stats",
+      "short_name": "Stats",
+      "description": "Analytics ve Aurora tavsiyeleri",
+      "url": "/?tab=stats",
+      "icons": [{"src": "/icons/aurora-192.png", "sizes": "192x192"}]
+    }
+  ]
+}
+

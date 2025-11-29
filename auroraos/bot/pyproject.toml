@@ -1,0 +1,15 @@
+[project]
+name = "auroraos-bot"
+version = "0.1.0"
+description = "AuroraOS Telegram Bot — Betül Console Gateway — Dedicated to Betül"
+requires-python = ">=3.10"
+dependencies = [
+  "aiogram>=3.0.0",
+  "aiohttp>=3.9.0",
+  "python-dotenv>=1.0.0",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+

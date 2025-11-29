@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#000000"/>
+  
+  <!-- Aurora Halo -->
+  <circle cx="256" cy="256" r="200" fill="url(#haloGradient)" opacity="0.3"/>
+  
+  <!-- Core Circle -->
+  <circle cx="256" cy="256" r="120" fill="url(#coreGradient)"/>
+  
+  <!-- Inner Glow -->
+  <circle cx="256" cy="256" r="80" fill="url(#innerGradient)" opacity="0.8"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <radialGradient id="haloGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#AFA3FF" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#AFA3FF" stop-opacity="0"/>
+    </radialGradient>
+    
+    <linearGradient id="coreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#AFA3FF"/>
+      <stop offset="100%" stop-color="#AD5FFF"/>
+    </linearGradient>
+    
+    <radialGradient id="innerGradient" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#AFA3FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
+
