@@ -10,6 +10,7 @@ engine = create_engine(
 
 def init_db() -> None:
     from . import models  # ensure models imported
+    from .orchestrator import models as orchestrator_models  # orchestrator models
     SQLModel.metadata.create_all(bind=engine)
 
 

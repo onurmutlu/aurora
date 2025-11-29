@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .db import init_db
 from .routers import content, ai, analytics, dm, day
+from .orchestrator.router import router as orchestrator_router
 
 
 def create_app() -> FastAPI:
@@ -46,6 +47,9 @@ def create_app() -> FastAPI:
     app.include_router(analytics.router, prefix=settings.API_V1_PREFIX)
     app.include_router(dm.router, prefix=settings.API_V1_PREFIX)
     app.include_router(day.router, prefix=settings.API_V1_PREFIX)
+    
+    # 🚀 Orchestrator — FlirtMarket, Telegram, Web entegrasyonu
+    app.include_router(orchestrator_router, prefix=f"{settings.API_V1_PREFIX}/orchestrator", tags=["orchestrator"])
 
     @app.get("/")
     def root():
