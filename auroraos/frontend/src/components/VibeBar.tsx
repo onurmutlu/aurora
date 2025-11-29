@@ -32,7 +32,7 @@ export function VibeBar({ onModeChange }: Props) {
   return (
     <div
       style={{
-        padding: "16px 20px",
+        padding: "10px 16px",
         borderBottom: `1px solid ${colors.borderSubtle}`,
         background: "rgba(0, 0, 0, 0.3)",
         backdropFilter: "blur(10px)",
@@ -41,11 +41,11 @@ export function VibeBar({ onModeChange }: Props) {
       <div
         style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: 10,
+          fontSize: 9,
           opacity: 0.4,
-          marginBottom: 12,
+          marginBottom: 8,
           textTransform: "uppercase",
-          letterSpacing: "0.15em",
+          letterSpacing: "0.1em",
         }}
       >
         Vibe Mode
@@ -54,10 +54,10 @@ export function VibeBar({ onModeChange }: Props) {
       <div
         style={{
           display: "flex",
-          gap: 8,
+          gap: 6,
           overflowX: "auto",
-          paddingBottom: 4,
-          marginBottom: 16,
+          paddingBottom: 2,
+          marginBottom: 10,
         }}
       >
         {VIBE_MODES.map((m) => {
@@ -67,12 +67,12 @@ export function VibeBar({ onModeChange }: Props) {
               key={m.id}
               onClick={() => handleChange(m.id)}
               style={{
-                padding: "10px 16px",
-                borderRadius: 999,
+                padding: "5px 10px",
+                borderRadius: 12,
                 border: isActive 
                   ? `1px solid ${colors.auroraLavender}` 
                   : `1px solid ${colors.borderLight}`,
-                fontSize: 12,
+                fontSize: 10,
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 500,
                 cursor: "pointer",
@@ -86,10 +86,10 @@ export function VibeBar({ onModeChange }: Props) {
                 transition: "all 0.2s ease",
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 4,
               }}
             >
-              <span style={{ fontSize: 14 }}>{m.emoji}</span>
+              <span style={{ fontSize: 11 }}>{m.emoji}</span>
               <span>{m.label}</span>
             </button>
           );
@@ -100,13 +100,13 @@ export function VibeBar({ onModeChange }: Props) {
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 14,
+          gap: 10,
         }}
       >
         <span 
           style={{ 
             fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: 10, 
+            fontSize: 9, 
             opacity: 0.4,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
@@ -121,7 +121,7 @@ export function VibeBar({ onModeChange }: Props) {
               left: 0,
               top: "50%",
               transform: "translateY(-50%)",
-              height: 4,
+              height: 3,
               width: `${energy}%`,
               background: `linear-gradient(90deg, ${colors.auroraLavender}, ${colors.femmeViolet})`,
               borderRadius: 999,
@@ -137,14 +137,15 @@ export function VibeBar({ onModeChange }: Props) {
             style={{
               width: "100%",
               background: "rgba(255, 255, 255, 0.08)",
+              height: 3,
             }}
           />
         </div>
         <span 
           style={{ 
             fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 12, 
-            minWidth: 40,
+            fontSize: 10, 
+            minWidth: 32,
             textAlign: "right",
             color: colors.auroraLavender,
           }}

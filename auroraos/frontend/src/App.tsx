@@ -101,16 +101,16 @@ function QuickGeneratePanel({ onGenerate }: { onGenerate: () => void }) {
   return (
     <div
       style={{
-        padding: "12px 16px",
+        padding: "8px 12px",
         background: `linear-gradient(135deg, ${colors.auroraLavender}08, ${colors.femmeViolet}05)`,
         borderBottom: `1px solid ${colors.borderSubtle}`,
       }}
     >
       <div
         style={{
-          fontSize: 10,
+          fontSize: 9,
           color: colors.textMuted,
-          marginBottom: 8,
+          marginBottom: 6,
           textTransform: "uppercase",
           letterSpacing: "0.1em",
         }}
@@ -120,7 +120,7 @@ function QuickGeneratePanel({ onGenerate }: { onGenerate: () => void }) {
       <div
         style={{
           display: "flex",
-          gap: 8,
+          gap: 5,
           flexWrap: "wrap",
         }}
       >
@@ -130,14 +130,14 @@ function QuickGeneratePanel({ onGenerate }: { onGenerate: () => void }) {
             onClick={() => handleGenerate(s.id)}
             disabled={generating !== null}
             style={{
-              padding: "6px 12px",
+              padding: "4px 8px",
               background: generating === s.id
                 ? colors.auroraLavender
                 : `${colors.onyxBlack}cc`,
               border: `1px solid ${colors.borderSubtle}`,
-              borderRadius: 16,
+              borderRadius: 10,
               color: generating === s.id ? colors.void : colors.textPrimary,
-              fontSize: 11,
+              fontSize: 10,
               cursor: generating ? "wait" : "pointer",
               transition: "all 0.2s ease",
               opacity: generating && generating !== s.id ? 0.5 : 1,
